@@ -1,5 +1,33 @@
 # 项目修改日志
 
+## 2024-01-06 - 推送代码到GitHub仓库
+
+### 修改内容
+- 成功将文件管理系统代码推送到GitHub仓库：https://github.com/dookcss/File-manager.git
+- 创建了.gitignore文件，排除了upload_files.py和.cursor目录
+- 合并了远程仓库的LICENSE文件
+- 完成了初始提交，包含36个文件
+
+### 推送的文件列表
+1. 核心配置文件：config.php, functions.php, database.php
+2. 主要页面文件：index.php, login.php, register.php, admin.php
+3. API接口文件：api/index.php, api/edit_file.php, api/docs/index.php
+4. 用户管理文件：profile.php, change_password.php, users.php
+5. 文件操作文件：upload_handler.php, download.php, preview.php, video.php
+6. 系统管理文件：install.php, init_db.php, invite_codes.php
+7. 其他功能文件：share.php, s.php, create_file.php, create_folder.php等
+
+### 排除的文件
+- upload_files.py（按用户要求排除）
+- .cursor/目录（按用户要求排除）
+- uploads/目录（用户上传文件，不应提交到代码仓库）
+
+### 技术细节
+- 使用git add .添加所有文件
+- 使用git commit -m "Initial commit: 文件管理系统完整代码"提交
+- 使用git pull origin main --allow-unrelated-histories合并远程LICENSE文件
+- 使用git push origin main推送到远程仓库
+
 ## 2024-01-06 - 删除代码注释信息
 
 ### 修改内容
