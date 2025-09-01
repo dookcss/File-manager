@@ -193,7 +193,7 @@ if ($currentDir) {
         <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
             <div class="d-flex align-items-center">
                 <h2 class="h3 mb-2 mb-md-0 me-3">文件管理系统</h2>
-                <a href="https://github.com/your-username/your-repo" target="_blank" class="btn btn-outline-dark btn-sm" title="查看项目源码">
+                <a href="https://github.com/dookcss/File-manager" target="_blank" class="btn btn-outline-dark btn-sm" title="查看项目源码">
                     <i class="fab fa-github"></i>
                 </a>
             </div>
