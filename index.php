@@ -2,11 +2,13 @@
 require_once 'functions.php';
 requireLogin();
 
+
 if (isset($_GET['logout'])) {
     logout();
     header('Location: login.php');
     exit;
 }
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_FILES['file'])) {
@@ -18,7 +20,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+
 $currentDir = isset($_GET['dir']) ? trim($_GET['dir'], '/') : '';
+
 
 if (isset($_GET['delete'])) {
     $path = $currentDir ? ($currentDir . '/' . $_GET['delete']) : $_GET['delete'];
@@ -30,8 +34,10 @@ if (isset($_GET['delete'])) {
     $message = $result['message'];
 }
 
+
 $keyword = $_GET['search'] ?? '';
 $files = $keyword ? searchFiles($keyword) : getFileList(null, $currentDir);
+
 
 $breadcrumbs = [];
 if ($currentDir) {
@@ -57,14 +63,14 @@ if ($currentDir) {
     <link href="https://cdn.bootcdn.net/ajax/libs/codemirror/5.65.2/codemirror.min.css" rel="stylesheet">
     <link href="https://cdn.bootcdn.net/ajax/libs/codemirror/5.65.2/theme/monokai.min.css" rel="stylesheet">
     <style>
-        /* 移动端适配 */
+
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
                 margin-top: 10px !important;
             }
             
-            /* 调整按钮组在移动端的显示 */
+
             .action-buttons {
                 display: flex;
                 flex-wrap: wrap;
@@ -72,24 +78,23 @@ if ($currentDir) {
                 width: 100%;
             }
             
-            /* 调整表格在移动端的显示 */
+
             .table-responsive {
                 font-size: 14px;
             }
             
-            /* 在移动端隐藏某些表格列 */
+
             .table-mobile-hide {
                 display: none;
             }
             
-            /* 调整按钮大小和布局 */
+
             .btn-sm {
                 padding: 0.25rem 0.5rem;
                 font-size: 12px;
                 margin-bottom: 5px;
             }
             
-            /* 调整面包屑导航 */
             .breadcrumb {
                 font-size: 14px;
                 white-space: nowrap;
@@ -98,7 +103,6 @@ if ($currentDir) {
                 padding: 0.5rem 0;
             }
             
-            /* 调整卡片间距 */
             .card {
                 margin-bottom: 15px;
             }
@@ -107,35 +111,29 @@ if ($currentDir) {
                 padding: 15px;
             }
             
-            /* 调整搜索框布局 */
             .search-form .col-md-2 {
                 margin-top: 10px;
             }
             
-            /* 调整文件操作按钮 */
             .file-actions {
                 display: flex;
                 flex-wrap: wrap;
                 gap: 5px;
             }
             
-            /* 调整文件名显示 */
             .file-name {
                 word-break: break-all;
                 font-size: 14px;
             }
             
-            /* 上传和创建文件夹表单 */
             .form-control {
                 margin-bottom: 10px;
             }
             
-            /* 进度条样式 */
             .progress {
                 height: 15px;
             }
 
-            /* 用户菜单在移动端的位置 */
             .user-menu {
                 left: 10px;
                 bottom: 10px;
@@ -169,7 +167,6 @@ if ($currentDir) {
             height: 100%;
         }
 
-        /* 用户菜单固定定位 */
         .user-menu {
             position: fixed;
             left: 20px;
@@ -193,7 +190,7 @@ if ($currentDir) {
         <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
             <div class="d-flex align-items-center">
                 <h2 class="h3 mb-2 mb-md-0 me-3">文件管理系统</h2>
-                <a href="https://github.com/dookcss/File-manager" target="_blank" class="btn btn-outline-dark btn-sm" title="查看项目源码">
+                <a href="https://github.com/your-username/your-repo" target="_blank" class="btn btn-outline-dark btn-sm" title="查看项目源码">
                     <i class="fab fa-github"></i>
                 </a>
             </div>
@@ -208,12 +205,11 @@ if ($currentDir) {
             </div>
         </div>
 
-        <!-- 存储空间信息 -->
         <div class="card mb-4">
             <div class="card-body">
                 <?php
                 $used = getUserStorageUsed();
-                $total = getUserQuota();  // 使用 getUserQuota 替代直接使用 USER_SPACE_QUOTA
+                $total = getUserQuota();
                 $usedPercent = ($used / $total) * 100;
                 ?>
                 <h5 class="card-title">存储空间</h5>
@@ -238,7 +234,6 @@ if ($currentDir) {
         <div class="alert alert-info"><?php echo htmlspecialchars($message); ?></div>
         <?php endif; ?>
 
-        <!-- 修改上传文件和搜索文件部分 -->
         <div class="row mb-4">
             <div class="col-12 col-md-6 mb-3 mb-md-0">
                 <div class="card h-100">
@@ -281,7 +276,6 @@ if ($currentDir) {
             </div>
         </div>
 
-        <!-- 添加面包屑导航 -->
         <?php if (!$keyword): ?>
         <nav aria-label="breadcrumb" class="mb-4">
             <ol class="breadcrumb">
@@ -303,7 +297,6 @@ if ($currentDir) {
         </nav>
         <?php endif; ?>
 
-        <!-- 在顶部添加分享列表入口 -->
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
                 <a href="share.php" class="btn btn-info me-2">
@@ -321,7 +314,6 @@ if ($currentDir) {
             </div>
         </div>
 
-        <!-- 文件列表 -->
         <div class="card">
             <div class="card-header bg-light">
                 <h5 class="mb-0">文件列表</h5>
@@ -377,7 +369,6 @@ if ($currentDir) {
                                                <i class="fas fa-download"></i>
                                             </a>
                                             <?php 
-                                            // 检查文件是否可编辑
                                             $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
                                             $editableExtensions = [
                                                 'txt', 'md', 'log', 'ini', 'conf', 'env',
@@ -426,7 +417,6 @@ if ($currentDir) {
         </div>
     </div>
 
-    <!-- 修改文件冲突处理模态框 -->
     <div class="modal fade" id="conflictModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -446,7 +436,6 @@ if ($currentDir) {
         </div>
     </div>
 
-    <!-- 在用户菜单中添加修改密码链接 -->
     <div class="dropdown user-menu">
         <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
             <i class="fas fa-user"></i> <?php echo htmlspecialchars($_SESSION['username']); ?>
@@ -472,7 +461,6 @@ if ($currentDir) {
         </ul>
     </div>
 
-    <!-- 添加分享选项模态框 -->
     <div class="modal fade" id="shareModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -503,7 +491,6 @@ if ($currentDir) {
         </div>
     </div>
 
-    <!-- 添加创建文件夹的模态框 -->
     <div class="modal fade" id="createFolderModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -528,7 +515,6 @@ if ($currentDir) {
         </div>
     </div>
 
-    <!-- 添加创建文件的模态框 -->
     <div class="modal fade" id="createFileModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -553,7 +539,6 @@ if ($currentDir) {
         </div>
     </div>
 
-    <!-- 添加下载远程文件的模态框 -->
     <div class="modal fade" id="downloadRemoteModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -562,34 +547,34 @@ if ($currentDir) {
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="downloadRemoteForm">
-                        <div class="mb-3">
-                            <label for="remoteUrl" class="form-label">文件URL</label>
-                            <input type="url" class="form-control" id="remoteUrl" name="url" required 
-                                   placeholder="请输入文件下载地址">
-                        </div>
-                        <div id="downloadProgress" class="d-none">
-                            <div class="progress mb-3">
-                                <div class="progress-bar progress-bar-striped progress-bar-animated" 
-                                     role="progressbar" style="width: 0%"></div>
+                                            <form id="downloadRemoteForm">
+                            <div class="mb-3">
+                                <label for="remoteUrl" class="form-label">文件URL</label>
+                                <input type="url" class="form-control" id="remoteUrl" name="url" required 
+                                       placeholder="请输入文件下载地址">
                             </div>
-                            <div class="download-info small text-muted">
-                                <div>下载进度：<span class="progress-text">0%</span></div>
-                                <div>下载速度：<span class="speed-text">0 KB/s</span></div>
-                                <div>已下载/总大小：<span class="size-text">0 KB / 0 KB</span></div>
+                            <input type="hidden" name="dir" value="<?php echo htmlspecialchars($currentDir); ?>">
+                            <div id="downloadProgress" class="d-none">
+                                <div class="progress mb-3">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                         role="progressbar" style="width: 0%"></div>
+                                </div>
+                                <div class="download-info small text-muted">
+                                    <div>下载进度：<span class="progress-text">0%</span></div>
+                                    <div>下载速度：<span class="speed-text">0 KB/s</span></div>
+                                    <div>已下载/总大小：<span class="size-text">0 KB / 0 KB</span></div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="text-end">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                            <button type="submit" class="btn btn-primary">开始下载</button>
-                        </div>
-                    </form>
+                            <div class="text-end">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                <button type="submit" class="btn btn-primary">开始下载</button>
+                            </div>
+                        </form>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 添加编辑器模态框 -->
     <div class="modal fade" id="editModal" tabindex="-1">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
@@ -610,7 +595,6 @@ if ($currentDir) {
         </div>
     </div>
 
-    <!-- 添加API Key隐藏字段 -->
     <?php
     $currentUser = getCurrentUser();
     $apiKey = $currentUser ? $currentUser['api_key'] : '';
@@ -619,25 +603,17 @@ if ($currentDir) {
 
     <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
-    // 保存上传表单的状态
     let lastUploadInfo = null;
     let conflictModal = null;
 
-    // 添加编辑器相关变量
     let editor = null;
     let currentEditFile = null;
     let currentFileVersion = null;
     let editModal = null;
 
-    // 初始化所有模态框
     document.addEventListener('DOMContentLoaded', function() {
-        // 初始化冲突模态框
         conflictModal = new bootstrap.Modal(document.getElementById('conflictModal'));
-
-        // 初始化编辑器模态框
         editModal = new bootstrap.Modal(document.getElementById('editModal'));
-        
-        // 初始化代码编辑器
         const editorTextarea = document.getElementById('fileContent');
         if (editorTextarea) {
             editor = CodeMirror.fromTextArea(editorTextarea, {
@@ -664,7 +640,6 @@ if ($currentDir) {
                 }
             });
             
-            // 确保编辑器正确加载
             setTimeout(() => {
                 if (editor) {
                     editor.refresh();
@@ -672,14 +647,12 @@ if ($currentDir) {
             }, 100);
         }
 
-        // 处理文件上传
         const uploadForm = document.getElementById('uploadForm');
         if (uploadForm) {
             uploadForm.addEventListener('submit', handleUpload);
         }
     });
 
-    // 处理文件上传
     async function handleUpload(e) {
         e.preventDefault();
         
@@ -701,18 +674,16 @@ if ($currentDir) {
             });
             
             const result = await response.json();
-            console.log('Upload response:', result); // 添加调试日志
+            console.log('Upload response:', result);
             
             if (!result.success) {
                 if (result.conflict) {
-                    // 保存当前的上传信息
                     lastUploadInfo = {
                         file: fileInput.files[0],
                         directory: formData.get('dir') || '',
                         filename: result.filename
                     };
                     
-                    // 显示冲突处理对话框
                     document.getElementById('conflictFileName').textContent = result.filename;
                     conflictModal.show();
                     return;
@@ -721,7 +692,7 @@ if ($currentDir) {
             }
             
             showUploadResult(result);
-            location.reload(); // 刷新页面以显示新文件
+            location.reload();
             
         } catch (error) {
             console.error('Upload error:', error);
@@ -729,7 +700,6 @@ if ($currentDir) {
         }
     }
 
-    // 处理文件冲突
     async function handleFileConflict(action) {
         if (!lastUploadInfo || !lastUploadInfo.file) {
             alert('上传状态已失效，请重新上传');
@@ -745,7 +715,7 @@ if ($currentDir) {
             formData.append('dir', lastUploadInfo.directory);
             formData.append('conflict_action', action);
             
-            console.log('Conflict handling:', action); // 添加调试日志
+            console.log('Conflict handling:', action);
             
             const response = await fetch('upload_handler.php', {
                 method: 'POST',
@@ -753,33 +723,28 @@ if ($currentDir) {
             });
             
             const result = await response.json();
-            console.log('Conflict response:', result); // 添加调试日志
+            console.log('Conflict response:', result);
             
             if (!result.success) {
                 throw new Error(result.message);
             }
             
-            // 隐藏冲突对话框
             if (conflictModal) {
                 conflictModal.hide();
             }
             
-            // 显示上传结果
             showUploadResult(result);
             
-            // 刷新页面以显示新文件
             location.reload();
             
         } catch (error) {
             console.error('Conflict handling error:', error);
             alert('处理冲突失败：' + error.message);
         } finally {
-            // 清除保存的上传信息
             lastUploadInfo = null;
         }
     }
 
-    // 显示上传结果
     function showUploadResult(result) {
         let message = result.message;
         if (result.original_name) {
@@ -789,7 +754,6 @@ if ($currentDir) {
         alert(message);
     }
 
-    // 取消上传
     function cancelUpload() {
         if (conflictModal) {
             conflictModal.hide();
@@ -847,10 +811,7 @@ if ($currentDir) {
             
             const result = await response.json();
             
-            // 关闭模态框
             bootstrap.Modal.getInstance(document.getElementById('createFileModal')).hide();
-            
-            // 显示结果提示
             const alert = document.createElement('div');
             alert.className = `alert alert-${result.success ? 'success' : 'danger'} alert-dismissible fade show`;
             alert.innerHTML = `
@@ -879,8 +840,6 @@ if ($currentDir) {
         const sizeText = form.querySelector('.size-text');
         const downloadProgress = form.querySelector('#downloadProgress');
         const submitButton = form.querySelector('button[type="submit"]');
-        
-        // 显示进度条
         downloadProgress.classList.remove('d-none');
         submitButton.disabled = true;
         
@@ -898,8 +857,6 @@ if ($currentDir) {
             while (true) {
                 const {value, done} = await reader.read();
                 if (done) break;
-                
-                // 解析进度信息
                 const lines = new TextDecoder().decode(value).split('\n');
                 for (const line of lines) {
                     if (!line) continue;
@@ -916,8 +873,6 @@ if ($currentDir) {
                     }
                 }
             }
-            
-            // 下载完成后刷新页面
             location.reload();
             
         } catch (error) {
@@ -927,8 +882,6 @@ if ($currentDir) {
             submitButton.disabled = false;
         }
     });
-
-    // 打开文件编辑器
     async function openFileEditor(filePath) {
         try {
             if (!editor) {
@@ -954,11 +907,8 @@ if ($currentDir) {
             if (!data.success) {
                 throw new Error(data.message || '获取文件内容失败');
             }
-            
-            // 设置编辑器模式
             const extension = filePath.split('.').pop().toLowerCase();
             const modeMap = {
-                // 网页相关
                 'html': 'htmlmixed',
                 'htm': 'htmlmixed',
                 'css': 'css',
@@ -975,8 +925,6 @@ if ($currentDir) {
                 'svg': 'xml',
                 'wxml': 'xml',
                 'xaml': 'xml',
-                
-                // 后端语言
                 'php': 'php',
                 'py': 'python',
                 'pyc': 'python',
@@ -994,8 +942,6 @@ if ($currentDir) {
                 'kts': 'text/x-kotlin',
                 'dart': 'dart',
                 'groovy': 'groovy',
-                
-                // C系列语言
                 'c': 'text/x-csrc',
                 'cpp': 'text/x-c++src',
                 'cc': 'text/x-c++src',
@@ -1006,8 +952,6 @@ if ($currentDir) {
                 'm': 'text/x-objectivec',
                 'mm': 'text/x-objectivec',
                 'swift': 'swift',
-                
-                // 配置文件
                 'yaml': 'yaml',
                 'yml': 'yaml',
                 'toml': 'toml',
@@ -1020,24 +964,18 @@ if ($currentDir) {
                 'nginx': 'nginx',
                 'dockerfile': 'dockerfile',
                 'docker-compose.yml': 'yaml',
-                
-                // Shell脚本
                 'sh': 'shell',
                 'bash': 'shell',
                 'zsh': 'shell',
                 'fish': 'shell',
                 'bat': 'batch',
                 'cmd': 'batch',
-                
-                // 数据库相关
                 'sql': 'sql',
                 'mysql': 'sql',
                 'pgsql': 'sql',
                 'plsql': 'sql',
                 'mongodb': 'javascript',
                 'redis': 'redis',
-                
-                // 其他编程语言
                 'r': 'r',
                 'pl': 'perl',
                 'pm': 'perl',
@@ -1057,8 +995,6 @@ if ($currentDir) {
                 'erl': 'erlang',
                 'ex': 'elixir',
                 'exs': 'elixir',
-                
-                // 标记语言
                 'md': 'markdown',
                 'markdown': 'markdown',
                 'textile': 'textile',
@@ -1067,8 +1003,6 @@ if ($currentDir) {
                 'adoc': 'asciidoc',
                 'tex': 'stex',
                 'latex': 'stex',
-                
-                // 默认纯文本
                 'txt': 'text/plain',
                 'log': 'text/plain',
                 'csv': 'text/plain',
@@ -1079,21 +1013,17 @@ if ($currentDir) {
             console.log('Setting mode:', mode);
             editor.setOption('mode', mode);
             
-            // 更新编辑器内容
             editor.setValue(data.content);
             currentEditFile = filePath;
             currentFileVersion = data.version;
             
-            // 检查文件大小是否超过6KB限制
             if (data.content.length > 6 * 1024) {
                 alert('警告：此文件大小超过6KB限制，在线编辑功能可能受限。建议下载后编辑。');
             }
             
-            // 显示编辑器模态框
             document.getElementById('editFileName').textContent = filePath;
             editModal.show();
             
-            // 刷新编辑器以确保正确显示
             setTimeout(() => {
                 editor.refresh();
                 editor.focus();
@@ -1105,7 +1035,6 @@ if ($currentDir) {
         }
     }
 
-    // 保存文件
     async function saveFile() {
         if (!currentEditFile || !currentFileVersion) {
             alert('没有打开的文件');
@@ -1120,7 +1049,6 @@ if ($currentDir) {
 
             const content = editor.getValue();
             
-            // 检查文件大小是否超过6KB限制
             if (content.length > 6 * 1024) {
                 alert('文件内容超过6KB限制，不支持在线编辑。请下载文件后在本地编辑。');
                 return;
@@ -1134,7 +1062,6 @@ if ($currentDir) {
             console.log('Saving file:', currentEditFile);
             console.log('Content length:', content.length);
             
-            // 使用相对路径，并添加时间戳防止缓存
             const timestamp = new Date().getTime();
             const response = await fetch(`api/edit_file.php?t=${timestamp}`, {
                 method: 'POST',
@@ -1173,11 +1100,9 @@ if ($currentDir) {
                 return;
             }
             
-            // 更新版本号
             currentFileVersion = data.file.version;
             alert('保存成功');
             
-            // 刷新文件列表
             location.reload();
             
         } catch (error) {
@@ -1186,7 +1111,6 @@ if ($currentDir) {
         }
     }
 
-    // 关闭编辑器
     function closeEditor() {
         if (editor.isClean()) {
             editModal.hide();

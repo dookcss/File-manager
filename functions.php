@@ -2,6 +2,7 @@
 require_once 'config.php';
 require_once 'database.php';
 
+
 function login($username, $password) {
     $userManager = new UserManager();
     $user = $userManager->verifyUser($username, $password);
@@ -19,6 +20,7 @@ function isLoggedIn() {
     return isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true;
 }
 
+
 function isAdmin() {
     if (!isLoggedIn()) {
         return false;
@@ -34,7 +36,6 @@ function isAdmin() {
 
 function logout() {
     $_SESSION = array();
-
     if (isset($_COOKIE[session_name()])) {
         setcookie(session_name(), '', time()-3600, '/');
     }
@@ -86,6 +87,7 @@ function getCurrentUser() {
     }
 }
 
+
 function createFolder($name, $parent = UPLOAD_PATH) {
     $path = $parent . '/' . basename($name);
     if (!file_exists($path)) {
@@ -101,26 +103,29 @@ function createFolder($name, $parent = UPLOAD_PATH) {
 }
 
 function deleteFolder($path) {
-    $fullPath = UPLOAD_PATH . '/' . trim($path, '/');
+    $userPath = getUserStoragePath();
+    if (!$userPath) {
+        return ['success' => false, 'message' => '用户未登录'];
+    }
+
+    $fullPath = $userPath . '/' . trim($path, '/');
+
     if (!is_dir($fullPath)) {
         return ['success' => false, 'message' => '文件夹不存在'];
     }
-    
-    $files = array_diff(scandir($fullPath), ['.', '..']);
-    foreach ($files as $file) {
-        $filePath = $fullPath . '/' . $file;
-        if (is_dir($filePath)) {
-            deleteFolder(str_replace(UPLOAD_PATH . '/', '', $filePath));
-        } else {
-            unlink($filePath);
-        }
+
+    $realTarget = realpath($fullPath);
+    $realUser = realpath($userPath);
+    if ($realTarget === false || strpos($realTarget, $realUser) !== 0) {
+        return ['success' => false, 'message' => '无权访问此目录'];
     }
-    
-    if (rmdir($fullPath)) {
+
+    if (deleteDirectory($fullPath)) {
         return ['success' => true, 'message' => '文件夹删除成功'];
     }
     return ['success' => false, 'message' => '文件夹删除失败'];
 }
+
 
 function searchFiles($keyword, $dir = null) {
     if ($dir === null) {
@@ -152,9 +157,11 @@ function searchFiles($keyword, $dir = null) {
     return $results;
 }
 
+
 function getPreviewUrl($file) {
     $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
     
+
     if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'ico'])) {
         return 'preview.php?file=' . urlencode($file['path']);
     }
@@ -178,6 +185,7 @@ function getPreviewUrl($file) {
     
     return false;
 }
+
 
 function getFileList($dir = null, $subdir = '') {
     if ($dir === null) {
@@ -211,6 +219,7 @@ function getFileList($dir = null, $subdir = '') {
     }
     return $files;
 }
+
 
 function uploadFile($file, $action = 'skip') {
     if (!isset($file['error']) || is_array($file['error'])) {
@@ -267,6 +276,7 @@ function uploadFile($file, $action = 'skip') {
     ];
 }
 
+
 function deleteFile($filename) {
     $userPath = getUserStoragePath();
     if (!$userPath) {
@@ -279,6 +289,7 @@ function deleteFile($filename) {
         return ['success' => false, 'message' => '文件不存在'];
     }
 
+
     if (strpos(realpath($path), realpath($userPath)) !== 0) {
         return ['success' => false, 'message' => '无权访问此文件'];
     }
@@ -290,6 +301,7 @@ function deleteFile($filename) {
     return ['success' => false, 'message' => '文件删除失败'];
 }
 
+
 function formatFileSize($bytes) {
     $units = ['B', 'KB', 'MB', 'GB', 'TB'];
     $bytes = max($bytes, 0);
@@ -298,6 +310,7 @@ function formatFileSize($bytes) {
     $bytes /= pow(1024, $pow);
     return round($bytes, 2) . ' ' . $units[$pow];
 }
+
 
 function getUserStoragePath() {
     if (!isLoggedIn()) {
@@ -309,6 +322,7 @@ function getUserStoragePath() {
     }
     return $path;
 }
+
 
 function getUserStorageUsed($username = null) {
     $username = $username ?? $_SESSION['username'];
@@ -330,10 +344,12 @@ function getUserStorageUsed($username = null) {
     return $size;
 }
 
+
 function checkUserStorageQuota($fileSize) {
     $used = getUserStorageUsed();
     return ($used + $fileSize) <= USER_SPACE_QUOTA;
 }
+
 
 function generateApiKey() {
     $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -343,6 +359,7 @@ function generateApiKey() {
     }
     return $key;
 }
+
 
 function validateApiKey($apiKey) {
     if (empty($apiKey)) {
@@ -355,6 +372,7 @@ function validateApiKey($apiKey) {
     return $stmt->fetch() !== false;
 }
 
+
 function getUserQuota($userId = null) {
     if ($userId === null) {
         $userId = $_SESSION['user_id'];
@@ -366,17 +384,21 @@ function getUserQuota($userId = null) {
     $user = $stmt->fetch();
     
     if ($user) {
+
         if ($user['is_admin'] && $user['storage_quota'] === null) {
             return ADMIN_SPACE_QUOTA;
         }
+
         if ($user['storage_quota'] !== null) {
             return $user['storage_quota'];
         }
+
         return USER_SPACE_QUOTA;
     }
     
     return USER_SPACE_QUOTA;
 }
+
 
 function setUserQuota($userId, $quota) {
     if (!isAdmin()) {
@@ -400,6 +422,7 @@ function setUserQuota($userId, $quota) {
     }
 }
 
+
 function getAllUsers() {
     if (!isAdmin()) {
         return [];
@@ -417,6 +440,7 @@ function getAllUsers() {
     return $users;
 }
 
+
 function getSystemTotalUsed() {
     try {
         $db = Database::getInstance()->getConnection();
@@ -433,6 +457,7 @@ function getSystemTotalUsed() {
         return 0;
     }
 }
+
 
 function getTotalUserQuotas() {
     try {
@@ -455,6 +480,7 @@ function getTotalUserQuotas() {
     }
 }
 
+
 function canRegisterNewUser() {
     try {
         $totalQuotas = getTotalUserQuotas();
@@ -475,6 +501,7 @@ function canRegisterNewUser() {
     }
 }
 
+
 function getDefaultUserQuota() {
     $db = Database::getInstance()->getConnection();
     $stmt = $db->query("SELECT value FROM system_settings WHERE name = 'default_user_quota'");
@@ -486,6 +513,7 @@ function getDefaultUserQuota() {
     
     return (int)$result['value'];
 }
+
 
 function setDefaultUserQuota($quota) {
     if (!isAdmin()) {
@@ -511,6 +539,7 @@ function setDefaultUserQuota($quota) {
         return ['success' => false, 'message' => '默认配额设置失败：' . $e->getMessage()];
     }
 }
+
 
 function deleteUserAccount($userId) {
     $db = Database::getInstance()->getConnection();
@@ -541,6 +570,7 @@ function deleteUserAccount($userId) {
         return ['success' => false, 'message' => '账号注销失败：' . $e->getMessage()];
     }
 }
+
 
 function deleteDirectory($dir) {
     if (!file_exists($dir)) {
@@ -576,6 +606,13 @@ function getMaxUploadSize() {
     return min($defaultSize, $uploadBytes, $postBytes);
 }
 
+/**
+ * 获取文件内容（API版本）
+ * @param string $filePath 文件路径
+ * @param string $apiKey API密钥
+ * @return array 包含文件内容和版本的数组
+ * @throws Exception 如果文件不存在或无法读取
+ */
 function getFileContent($filePath, $apiKey = null) {
     if ($apiKey) {
         $db = Database::getInstance()->getConnection();
@@ -633,6 +670,7 @@ function getFileContent($filePath, $apiKey = null) {
         'version' => md5_file($fullPath)
     ];
 }
+
 
 function checkApiAuth() {
     $headers = getallheaders();

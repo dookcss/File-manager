@@ -26,14 +26,37 @@ try {
     $filename = preg_replace('/[^\p{L}\p{N}\s\-_.]/u', '', $filename);
     
     $userPath = getUserStoragePath();
-    $targetPath = $userPath . '/' . $filename;
+
+    $subdir = $_POST['dir'] ?? '';
+    $subdir = trim($subdir, '/');
+    $subdir = str_replace(['..', '\\'], '', $subdir);
+
+    $targetDir = $userPath . ($subdir ? '/' . $subdir : '');
+
+    if (!file_exists($targetDir)) {
+        if (!@mkdir($targetDir, 0755, true)) {
+            throw new Exception('创建目标目录失败，请检查权限');
+        }
+        @chmod($targetDir, 0755);
+    }
+
+    $realUser = realpath($userPath);
+    $realTargetDir = realpath($targetDir);
+    if ($realTargetDir === false || strpos($realTargetDir, $realUser) !== 0) {
+        throw new Exception('无效的目标目录');
+    }
+
+    $targetPath = $targetDir . '/' . $filename;
 
     if (file_exists($targetPath)) {
         $pathInfo = pathinfo($filename);
         $i = 1;
         do {
-            $newName = $pathInfo['filename'] . '_' . $i . '.' . $pathInfo['extension'];
-            $targetPath = $userPath . '/' . $newName;
+            $newName = $pathInfo['filename'] . '_' . $i;
+            if (!empty($pathInfo['extension'])) {
+                $newName .= '.' . $pathInfo['extension'];
+            }
+            $targetPath = $targetDir . '/' . $newName;
             $i++;
         } while (file_exists($targetPath));
         $filename = $newName;
